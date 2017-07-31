@@ -1,0 +1,94 @@
+;
+; MyUSBIP.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+DriverVer = 07/31/2017,12.32.40.372
+CatalogFile=MyUSBIP.cat
+
+;-------------------------------Source & Destination--------------------
+[DestinationDirs]
+DefaultDestDir = 12
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+MyUSBIP_x86.sys=1,,
+MyUSBIP_x64.sys=1,,
+
+;---------------------------Define [MyUSBIP_Device]---------------------------
+[Manufacturer]
+%ManufacturerName%=Standard
+%ManufacturerName%=Standard,NTx86
+
+[Standard]
+%DeviceDesc%=MyUSBIP_Device, root\MyUSBIPEnum
+
+[Standard.NTx86]
+%DeviceDesc%=MyUSBIP_Device, root\MyUSBIPEnum
+
+;---------------------------[MyUSBIP_Device] -> files-------------------------
+[MyUSBIP_Device]
+CopyFiles=Driver_Dir_x86
+
+[MyUSBIP_Device.NTx86]
+CopyFiles=Driver_Dir_x64
+
+[Driver_Dir_x86]
+MyUSBIP_x86.sys
+
+[Driver_Dir_x64]
+MyUSBIP_x64.sys
+
+;---------------------------[MyUSBIP_Device] -> HW Settins------------------
+[MyUSBIP_Device.NT.HW]
+AddReg=MyUSBIP_Device_AddReg
+
+[MyUSBIP_Device.NTx86.HW]
+AddReg=MyUSBIP_Device_AddReg
+
+[MyUSBIP_Device_AddReg]
+HKR,,DeviceCharacteristics,0x10001,0x0100   
+
+;---------------------------[MyUSBIP_Device] -> Services----------------------
+;First param is Service Name.
+[MyUSBIP_Device.Services]
+AddService=MyUSBIPEnum_Service, %SPSVCINST_ASSOCSERVICE%, MyUSBIP_Service_Inst_x86
+
+[MyUSBIP_Device.NTx86.Services]
+AddService=MyUSBIPEnum_Service, %SPSVCINST_ASSOCSERVICE%, MyUSBIP_Service_Inst_x64
+
+[MyUSBIP_Service_Inst_x86]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MyUSBIP_x86.sys
+LoadOrderGroup = Extended Base
+
+[MyUSBIP_Service_Inst_x64]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MyUSBIP_x64.sys
+LoadOrderGroup = Extended Base
+
+;---------------------------[ClassInstall32]-------------------------------------
+
+
+
+
+;------------------------------- Strings ------------------------------------
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="JWL provide" ;TODO: Replace with your manufacturer name
+DeviceDesc="JWL DeviceDesc"
+DevClassName="DevClassName"
+DiskName="JWL SourceDisksName"
+ServiceDesc="ServiceDesc"
