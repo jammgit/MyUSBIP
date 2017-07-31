@@ -1,0 +1,120 @@
+﻿  Building 'MyUSBIP' with toolset 'WindowsKernelModeDriver10.0' and the 'Desktop' target platform.
+  Stamping x64\Release\MyUSBIP.inf [Version] section with DriverVer=07/30/2017,21.42.32.177
+C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\MyUSBIP\MyUSBIP.inf(29-29): warning 2223: Section [Standard] should have '.NTx86' decoration.
+C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\MyUSBIP\MyUSBIP.inf(49-49): warning 2083: Section [myusbip_device.nt.hw] not referenced or used.
+  busenum.c
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\public.h(92): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(211): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(287): warning C4201: nonstandard extension used: nameless struct/union
+busenum.c(352): warning C4245: 'return': conversion from 'USBD_STATUS' to 'unsigned int', signed/unsigned mismatch
+busenum.c(354): warning C4245: 'return': conversion from 'USBD_STATUS' to 'unsigned int', signed/unsigned mismatch
+busenum.c(356): warning C4245: 'return': conversion from 'USBD_STATUS' to 'unsigned int', signed/unsigned mismatch
+busenum.c(360): warning C4245: 'return': conversion from 'USBD_STATUS' to 'unsigned int', signed/unsigned mismatch
+busenum.c(345): warning C4100: 'type': unreferenced formal parameter
+busenum.c(345): warning C4100: 'in': unreferenced formal parameter
+busenum.c(376): warning C4311: 'type cast': pointer truncation from 'USBD_PIPE_HANDLE' to 'unsigned long'
+busenum.c(381): warning C4311: 'type cast': pointer truncation from 'USBD_PIPE_HANDLE' to 'unsigned long'
+busenum.c(386): warning C4311: 'type cast': pointer truncation from 'USBD_PIPE_HANDLE' to 'unsigned long'
+busenum.c(391): warning C4311: 'type cast': pointer truncation from 'USBD_PIPE_HANDLE' to 'unsigned long'
+busenum.c(552): warning C4389: '!=': signed/unsigned mismatch
+busenum.c(761): warning C4189: 'in': local variable is initialized but not referenced
+busenum.c(782): warning C4100: 'req': unreferenced formal parameter
+busenum.c(788): warning C4189: 'in': local variable is initialized but not referenced
+busenum.c(814): warning C4189: 'in': local variable is initialized but not referenced
+busenum.c(986): warning C4101: 'last_len': unreferenced local variable
+busenum.c(1177): warning C4189: 'found': local variable is initialized but not referenced
+busenum.c(1225): warning C4101: 'irpStack': unreferenced local variable
+busenum.c(1287): warning C4189: 'iostackirp': local variable is initialized but not referenced
+busenum.c(1283): warning C4101: 'irpStack': unreferenced local variable
+busenum.c(1381): warning C4101: 'irpStack': unreferenced local variable
+busenum.c(1464): warning C4100: 'pipe': unreferenced formal parameter
+busenum.c(1464): warning C4100: 'num': unreferenced formal parameter
+busenum.c(1578): warning C4100: 'pdodata': unreferenced formal parameter
+busenum.c(1586): warning C4100: 'req': unreferenced formal parameter
+busenum.c(1585): warning C4100: 'pdodata': unreferenced formal parameter
+busenum.c(2023): warning C4100: 'DriverObject': unreferenced formal parameter
+busenum.c(2087): warning C4057: 'function': 'volatile LONG *' differs in indirection to slightly different base types from 'ULONG *'
+busenum.c(2127): warning C4057: 'function': 'volatile LONG *' differs in indirection to slightly different base types from 'ULONG *'
+  buspdo.c
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\public.h(92): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(211): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(287): warning C4201: nonstandard extension used: nameless struct/union
+buspdo.c(602): warning C4101: 'result': unreferenced local variable
+buspdo.c(696): warning C4100: 'DeviceData': unreferenced formal parameter
+buspdo.c(810): warning C4100: 'DeviceData': unreferenced formal parameter
+buspdo.c(893): warning C4100: 'Irp': unreferenced formal parameter
+buspdo.c(892): warning C4100: 'DeviceData': unreferenced formal parameter
+buspdo.c(1085): warning C4100: 'DeviceData': unreferenced formal parameter
+buspdo.c(1153): warning C4100: 'BusInformationActualLength': unreferenced formal parameter
+buspdo.c(1152): warning C4100: 'BusInformationBufferLength': unreferenced formal parameter
+buspdo.c(1151): warning C4100: 'BusInformationBuffer': unreferenced formal parameter
+buspdo.c(1150): warning C4100: 'Level': unreferenced formal parameter
+buspdo.c(1149): warning C4100: 'BusContext': unreferenced formal parameter
+buspdo.c(1161): warning C4100: 'urb': unreferenced formal parameter
+buspdo.c(1160): warning C4100: 'context': unreferenced formal parameter
+buspdo.c(1169): warning C4100: 'currentusbframe': unreferenced formal parameter
+buspdo.c(1168): warning C4100: 'context': unreferenced formal parameter
+buspdo.c(1177): warning C4100: 'context': unreferenced formal parameter
+buspdo.c(1255): warning C4100: 'Context': unreferenced formal parameter
+buspdo.c(1289): warning C4100: 'Level': unreferenced formal parameter
+buspdo.c(1288): warning C4100: 'Context': unreferenced formal parameter
+buspdo.c(1315): warning C4100: 'Context': unreferenced formal parameter
+buspdo.c(1357): warning C4057: 'function': 'volatile LONG *' differs in indirection to slightly different base types from 'ULONG *'
+buspdo.c(1379): warning C4057: 'function': 'volatile LONG *' differs in indirection to slightly different base types from 'ULONG *'
+buspdo.c(1419): warning C4245: '=': conversion from 'int' to 'ULONG', signed/unsigned mismatch
+buspdo.c(1420): warning C4245: '=': conversion from 'int' to 'ULONG', signed/unsigned mismatch
+  code2name.c
+  pnp.c
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\public.h(92): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(211): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(287): warning C4201: nonstandard extension used: nameless struct/union
+pnp.c(48): warning C4101: 'dpc': unreferenced local variable
+pnp.c(47): warning C4101: 'timer': unreferenced local variable
+pnp.c(46): warning C4101: 'nameLength': unreferenced local variable
+pnp.c(766): warning C4100: 'Irp': unreferenced formal parameter
+pnp.c(1102): warning C4101: 'pdo_num': unreferenced local variable
+pnp.c(1174): warning C4389: '==': signed/unsigned mismatch
+pnp.c(1311): warning C4244: '=': conversion from 'int' to 'char', possible loss of data
+pnp.c(1291): warning C4101: 'status': unreferenced local variable
+pnp.c(1289): warning C4101: 'pdo': unreferenced local variable
+pnp.c(1368): warning C4389: '==': signed/unsigned mismatch
+  power.c
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\public.h(92): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(211): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(287): warning C4201: nonstandard extension used: nameless struct/union
+  Wmi.c
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\public.h(92): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(211): warning C4201: nonstandard extension used: nameless struct/union
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.h(287): warning C4201: nonstandard extension used: nameless struct/union
+Wmi.c(213): warning C4100: 'InstanceIndex': unreferenced formal parameter
+Wmi.c(301): warning C4100: 'InstanceIndex': unreferenced formal parameter
+Wmi.c(386): warning C4100: 'InstanceCount': unreferenced formal parameter
+Wmi.c(385): warning C4100: 'InstanceIndex': unreferenced formal parameter
+Wmi.c(481): warning C4100: 'InstanceName': unreferenced formal parameter
+  Generating Code...
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(362): warning C4702: unreachable code
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(891): warning C4701: potentially uninitialized local variable 'type' used
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(891): warning C4701: potentially uninitialized local variable 'recip' used
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(484): warning C4701: potentially uninitialized local variable 'send' used
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(1205): warning C4701: potentially uninitialized local variable 'seq_num' used
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(1202): warning C4701: potentially uninitialized local variable 'old_seq_num' used
+c:\users\jammgit\documents\visual studio 2015\projects\myusbip\myusbip\busenum.c(1806): warning C4701: potentially uninitialized local variable 'seq_num' used
+  MyUSBIP.vcxproj -> C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\x64\Release\MyUSBIP_x64.sys
+  MyUSBIP.vcxproj -> C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\x64\Release\MyUSBIP_x64.pdb (Full PDB)
+  Done Adding Additional Store
+  Successfully signed: C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\x64\Release\MyUSBIP_x64.sys
+  
+  ........................
+  Signability test complete.
+  
+  Errors:
+  None
+  
+  Warnings:
+  None
+  
+  Catalog generation complete.
+  C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\x64\Release\MyUSBIP\myusbip.cat
+  Done Adding Additional Store
+  Successfully signed: C:\Users\Jammgit\documents\visual studio 2015\Projects\MyUSBIP\x64\Release\MyUSBIP\myusbip.cat
+  

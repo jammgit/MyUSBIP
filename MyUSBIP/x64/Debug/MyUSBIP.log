@@ -1,0 +1,112 @@
+﻿  Building 'MyUSBIP' with toolset 'WindowsKernelModeDriver10.0' and the 'Desktop' target platform.
+  Stamping x64\Debug\MyUSBIP.inf [Version] section with DriverVer=07/31/2017,12.33.53.405
+F:\MyUSBIP\MyUSBIP\MyUSBIP.inf(29-29): warning 2223: Section [Standard] should have '.NTx86' decoration.
+F:\MyUSBIP\MyUSBIP\MyUSBIP.inf(49-49): warning 2083: Section [myusbip_device.nt.hw] not referenced or used.
+  busenum.c
+f:\myusbip\myusbip\public.h(92): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(211): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(287): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+busenum.c(352): warning C4245: “return”: 从“USBD_STATUS”转换到“unsigned int”，有符号/无符号不匹配
+busenum.c(354): warning C4245: “return”: 从“USBD_STATUS”转换到“unsigned int”，有符号/无符号不匹配
+busenum.c(356): warning C4245: “return”: 从“USBD_STATUS”转换到“unsigned int”，有符号/无符号不匹配
+busenum.c(360): warning C4245: “return”: 从“USBD_STATUS”转换到“unsigned int”，有符号/无符号不匹配
+busenum.c(376): warning C4311: “类型转换”: 从“USBD_PIPE_HANDLE”到“unsigned long”的指针截断
+busenum.c(381): warning C4311: “类型转换”: 从“USBD_PIPE_HANDLE”到“unsigned long”的指针截断
+busenum.c(386): warning C4311: “类型转换”: 从“USBD_PIPE_HANDLE”到“unsigned long”的指针截断
+busenum.c(391): warning C4311: “类型转换”: 从“USBD_PIPE_HANDLE”到“unsigned long”的指针截断
+busenum.c(552): warning C4389: “!=”: 有符号/无符号不匹配
+busenum.c(761): warning C4189: “in”: 局部变量已初始化但不引用
+busenum.c(782): warning C4100: “req”: 未引用的形参
+busenum.c(788): warning C4189: “in”: 局部变量已初始化但不引用
+busenum.c(814): warning C4189: “in”: 局部变量已初始化但不引用
+busenum.c(991): warning C4311: “类型转换”: 从“USBD_PIPE_HANDLE”到“unsigned long”的指针截断
+busenum.c(986): warning C4101: “last_len”: 未引用的局部变量
+busenum.c(1074): warning C4311: “类型转换”: 从“USBD_PIPE_HANDLE”到“unsigned long”的指针截断
+busenum.c(1177): warning C4189: “found”: 局部变量已初始化但不引用
+busenum.c(1225): warning C4101: “irpStack”: 未引用的局部变量
+busenum.c(1287): warning C4189: “iostackirp”: 局部变量已初始化但不引用
+busenum.c(1283): warning C4101: “irpStack”: 未引用的局部变量
+busenum.c(1381): warning C4101: “irpStack”: 未引用的局部变量
+busenum.c(1578): warning C4100: “pdodata”: 未引用的形参
+busenum.c(1585): warning C4100: “pdodata”: 未引用的形参
+busenum.c(2087): warning C4057: “函数”:“volatile LONG *”与“ULONG *”在稍微不同的基类型间接寻址上不同
+busenum.c(2129): warning C4057: “函数”:“volatile LONG *”与“ULONG *”在稍微不同的基类型间接寻址上不同
+  buspdo.c
+f:\myusbip\myusbip\public.h(92): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(211): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(287): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+buspdo.c(602): warning C4101: “result”: 未引用的局部变量
+buspdo.c(810): warning C4100: “DeviceData”: 未引用的形参
+buspdo.c(893): warning C4100: “Irp”: 未引用的形参
+buspdo.c(892): warning C4100: “DeviceData”: 未引用的形参
+buspdo.c(1085): warning C4100: “DeviceData”: 未引用的形参
+buspdo.c(1153): warning C4100: “BusInformationActualLength”: 未引用的形参
+buspdo.c(1152): warning C4100: “BusInformationBufferLength”: 未引用的形参
+buspdo.c(1151): warning C4100: “BusInformationBuffer”: 未引用的形参
+buspdo.c(1150): warning C4100: “Level”: 未引用的形参
+buspdo.c(1149): warning C4100: “BusContext”: 未引用的形参
+buspdo.c(1161): warning C4100: “urb”: 未引用的形参
+buspdo.c(1160): warning C4100: “context”: 未引用的形参
+buspdo.c(1169): warning C4100: “currentusbframe”: 未引用的形参
+buspdo.c(1168): warning C4100: “context”: 未引用的形参
+buspdo.c(1177): warning C4100: “context”: 未引用的形参
+buspdo.c(1289): warning C4100: “Level”: 未引用的形参
+buspdo.c(1357): warning C4057: “函数”:“volatile LONG *”与“ULONG *”在稍微不同的基类型间接寻址上不同
+buspdo.c(1379): warning C4057: “函数”:“volatile LONG *”与“ULONG *”在稍微不同的基类型间接寻址上不同
+buspdo.c(1419): warning C4245: “=”: 从“int”转换到“ULONG”，有符号/无符号不匹配
+buspdo.c(1420): warning C4245: “=”: 从“int”转换到“ULONG”，有符号/无符号不匹配
+  code2name.c
+  pnp.c
+f:\myusbip\myusbip\public.h(92): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(211): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(287): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+pnp.c(78): warning C4010: 单行注释包含行继续符
+pnp.c(48): warning C4101: “dpc”: 未引用的局部变量
+pnp.c(47): warning C4101: “timer”: 未引用的局部变量
+pnp.c(842): warning C4010: 单行注释包含行继续符
+pnp.c(843): warning C4010: 单行注释包含行继续符
+pnp.c(779): warning C4100: “Irp”: 未引用的形参
+pnp.c(1149): warning C4101: “pdo_num”: 未引用的局部变量
+pnp.c(1221): warning C4389: “==”: 有符号/无符号不匹配
+pnp.c(1358): warning C4244: “=”: 从“int”转换到“char”，可能丢失数据
+pnp.c(1338): warning C4101: “status”: 未引用的局部变量
+pnp.c(1336): warning C4101: “pdo”: 未引用的局部变量
+pnp.c(1415): warning C4389: “==”: 有符号/无符号不匹配
+  power.c
+f:\myusbip\myusbip\public.h(92): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(211): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(287): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+  Wmi.c
+f:\myusbip\myusbip\public.h(92): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(211): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+f:\myusbip\myusbip\busenum.h(287): warning C4201: 使用了非标准扩展: 无名称的结构/联合
+Wmi.c(213): warning C4100: “InstanceIndex”: 未引用的形参
+Wmi.c(301): warning C4100: “InstanceIndex”: 未引用的形参
+Wmi.c(481): warning C4100: “InstanceName”: 未引用的形参
+  正在生成代码...
+f:\myusbip\myusbip\busenum.c(362): warning C4702: 无法访问的代码
+f:\myusbip\myusbip\busenum.c(484): warning C4701: 使用了可能未初始化的局部变量“send”
+f:\myusbip\myusbip\busenum.c(891): warning C4701: 使用了可能未初始化的局部变量“type”
+f:\myusbip\myusbip\busenum.c(891): warning C4701: 使用了可能未初始化的局部变量“recip”
+f:\myusbip\myusbip\busenum.c(1204): warning C4701: 使用了可能未初始化的局部变量“seq_num”
+f:\myusbip\myusbip\busenum.c(1202): warning C4701: 使用了可能未初始化的局部变量“old_seq_num”
+f:\myusbip\myusbip\busenum.c(1806): warning C4701: 使用了可能未初始化的局部变量“seq_num”
+  MyUSBIP.vcxproj -> F:\MyUSBIP\x64\Debug\MyUSBIP_x64.sys
+  MyUSBIP.vcxproj -> F:\MyUSBIP\x64\Debug\MyUSBIP_x64.pdb (Full PDB)
+  Done Adding Additional Store
+  Successfully signed: F:\MyUSBIP\x64\Debug\MyUSBIP_x64.sys
+  
+  ........................
+  Signability test complete.
+  
+  Errors:
+  None
+  
+  Warnings:
+  None
+  
+  Catalog generation complete.
+  F:\MyUSBIP\x64\Debug\MyUSBIP\myusbip.cat
+  Done Adding Additional Store
+  Successfully signed: F:\MyUSBIP\x64\Debug\MyUSBIP\myusbip.cat
+  
