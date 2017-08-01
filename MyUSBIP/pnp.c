@@ -627,6 +627,10 @@ Handle requests from the Plug & Play system for the BUS itself
 		return status;
 
 	case IRP_MN_QUERY_DEVICE_RELATIONS:
+		// PnP manager发送此消息来获取设备列表，驱动通过调用
+		// IoInvalidateDeviceRelations 让PnP更新设备，
+		// Plugin 和 unplugin 中，都调用了IoInvalidateDeviceRelations
+		// 通过 (PDEVICE_RELATIONS)Irp->IoStatus.Information结构体 告诉PnP
 
 		Bus_KdPrint_Cont(DeviceData, BUS_DBG_PNP_TRACE,
 			("\tQueryDeviceRelation Type: %s\n",
@@ -815,6 +819,8 @@ Bus_StartFdo(
 	// 此函数此前，已将IRP发送到底层，底层判断可以，所以才来到这里
 
 	// 设置接口是否可用，可用的话，那么用户层就可以通过在Bus_AddDevice注册过的GUID接口来打开此设备
+	//A function or a filter driver typically calls this routine with Enable set to TRUE after it 
+	// successfully starts a device in response to an IRP_MN_START_DEVICE IRP.
 	status = IoSetDeviceInterfaceState(&FdoData->InterfaceName, TRUE);
 	if (!NT_SUCCESS(status)) {
 		Bus_KdPrint(FdoData, BUS_DBG_PNP_TRACE,
@@ -1182,8 +1188,11 @@ bus_init_pdo(
 	pdo->Flags |= DO_POWER_PAGABLE | DO_DIRECT_IO;
 
 	ExAcquireFastMutex(&fdodata->Mutex);
+
+	//将pdo的地址 插入 fdo的链表中
 	InsertTailList(&fdodata->ListOfPDOs, &pdodata->Link);
 	fdodata->NumPDOs++;
+
 	ExReleaseFastMutex(&fdodata->Mutex);
 	// This should be the last step in initialization.
 	pdo->Flags &= ~DO_DEVICE_INITIALIZING;
@@ -1208,6 +1217,7 @@ NTSTATUS bus_plugin_dev(ioctl_usbvbus_plugin * plugin, PFDO_DEVICE_DATA  fdodata
 			plugin->addr,
 			plugin->vendor, plugin->product));
 
+	// 虚拟USB设备使用的端口 >= 1
 	if (plugin->addr <= 0)
 		return STATUS_INVALID_PARAMETER;
 
@@ -1313,7 +1323,7 @@ NTSTATUS bus_plugin_dev(ioctl_usbvbus_plugin * plugin, PFDO_DEVICE_DATA  fdodata
 		IoDeleteDevice(pdo);
 		return STATUS_INVALID_PARAMETER;
 	}
-	pdodata->SerialNo = plugin->addr;
+	pdodata->SerialNo = plugin->addr; // 初始端口从1开始
 	pdodata->fo = fo;
 	pdodata->devid = plugin->devid;
 	pdodata->speed = plugin->speed;
@@ -1349,6 +1359,7 @@ NTSTATUS bus_get_ports_status(ioctl_usbvbus_get_ports_status * st,
 	for (entry = fdodata->ListOfPDOs.Flink;
 		entry != &fdodata->ListOfPDOs;
 		entry = entry->Flink) {
+		// 第一次插入USB设备，并没有进入这个循环吧？
 
 		pdodata = CONTAINING_RECORD(entry, PDO_DEVICE_DATA, Link);
 		if (pdodata->SerialNo > 127 || pdodata->SerialNo == 0) {
@@ -1427,6 +1438,7 @@ bus_unplug_dev(
 	ExReleaseFastMutex(&fdodata->Mutex);
 
 	if (found) {
+		// 引发IRP_MN_QUERY_DEVICE_RELATIONS 
 		IoInvalidateDeviceRelations(fdodata->UnderlyingPDO, BusRelations);
 
 		ExAcquireFastMutex(&fdodata->Mutex);

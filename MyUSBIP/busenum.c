@@ -52,6 +52,7 @@ NT Status Code
 
 	ExInitializeNPagedLookasideList(&g_lookaside, NULL, NULL, 0,
 		sizeof(struct urb_req), 'USBV', 0);
+	LOOKASIDE_MINIMUM_BLOCK_SIZE;;
 
 	//
 	// Save the RegistryPath for WMI.
@@ -77,12 +78,25 @@ NT Status Code
 	//
 	// Set entry points into the driver
 	//
+	// CreateFile
 	DriverObject->MajorFunction[IRP_MJ_CREATE] = Bus_Create;
-	DriverObject->MajorFunction[IRP_MJ_CLEANUP] = Bus_Cleanup;
-	DriverObject->MajorFunction[IRP_MJ_CLOSE] = Bus_Close;
+	// ReadFile
 	DriverObject->MajorFunction[IRP_MJ_READ] = Bus_Read;
+	// WriteFile
 	DriverObject->MajorFunction[IRP_MJ_WRITE] = Bus_Write;
+
+	//清楚工作 CloseHandle
+	DriverObject->MajorFunction[IRP_MJ_CLEANUP] = Bus_Cleanup;
+
+	//关闭工作 CloseHandle
+	DriverObject->MajorFunction[IRP_MJ_CLOSE] = Bus_Close;
+
+
+
+	// start , stop , remove ...
 	DriverObject->MajorFunction[IRP_MJ_PNP] = Bus_PnP;
+
+	// 
 	DriverObject->MajorFunction[IRP_MJ_POWER] = Bus_Power;
 
 	// DeviceIoControl
@@ -459,21 +473,25 @@ int process_write_irp(PPDO_DEVICE_DATA pdodata, PIRP irp)
 
 	irpstack = IoGetCurrentIrpStackLocation(irp);
 	len = irpstack->Parameters.Write.Length;
+
 	if (len<sizeof(*h)) {
 		KdPrint(("write, small len %d\n", len));
 		return STATUS_INVALID_PARAMETER;
 	}
 	h = irp->AssociatedIrp.SystemBuffer;
+
 	KeAcquireSpinLock(&pdodata->q_lock, &oldirql);
 	for (le = pdodata->ioctl_q.Flink;
 		le != &pdodata->ioctl_q;
 		le = le->Flink) {
 		urb_r = CONTAINING_RECORD(le, struct urb_req, list);
+
+		// 根据seqnum来【对应】 请求的IRP 和 答复的IRP
 		if (urb_r->seq_num == h->base.seqnum) {
 			ioctl_irp = urb_r->irp;
 			if (IoSetCancelRoutine(ioctl_irp, NULL)) {
 				found = 1;
-				RemoveEntryList(le);
+				RemoveEntryList(le); //完成请求，删除ioctl_q链表中该元素
 				send = urb_r->send;
 			}
 			break;
@@ -481,6 +499,7 @@ int process_write_irp(PPDO_DEVICE_DATA pdodata, PIRP irp)
 	}
 	KeReleaseSpinLock(&pdodata->q_lock, oldirql);
 
+	// 告诉应用层，所有buffer都被处理了
 	irp->IoStatus.Information = len;
 
 	if (!found) {
@@ -640,6 +659,7 @@ end:
 	* so without this it will change IRQL sometimes,
 	* and introduce to a dead of my userspace program */
 	KeRaiseIrql(DISPATCH_LEVEL, &oldirql);
+	// 完成ioctl_irp，此时USB功能驱动返回，系统拿到采集端数据。
 	IoCompleteRequest(ioctl_irp, IO_NO_INCREMENT);
 	KeLowerIrql(oldirql);
 	return STATUS_SUCCESS;
@@ -678,7 +698,10 @@ Bus_Write(
 		goto END;
 	}
 	stackirp = IoGetCurrentIrpStackLocation(Irp);
+
+	// 只有FDO能使用FsContext
 	pdodata = stackirp->FileObject->FsContext;
+
 	if (NULL == pdodata || pdodata->Present == FALSE) {
 		status = STATUS_INVALID_DEVICE_REQUEST;
 		goto END;
@@ -1134,6 +1157,7 @@ int set_read_irp_data(PIRP read_irp, PIRP ioctl_irp, unsigned long seq_num,
 		read_irp->IoStatus.Information = 0;
 		return STATUS_INVALID_PARAMETER;
 	}
+
 	urb = iostack_irp->Parameters.Others.Argument1;
 	if (NULL == urb) {
 		read_irp->IoStatus.Information = 0;
@@ -1186,12 +1210,19 @@ int process_read_irp(PPDO_DEVICE_DATA pdodata, PIRP read_irp)
 	unsigned long seq_num, old_seq_num;
 	int found = 0;
 	KeAcquireSpinLock(&pdodata->q_lock, &oldirql);
+
+	// 遍历urb_req请求链表，功能驱动通过IRP_MJ_INTERNAL_DEVICE_CONTROL消息，通知Bus驱动有新的请求
+	// Bus驱动将此请求插入到 pdodata 的 LIST_ENTRY 中，也就是ioctl_q成员。
 	for (le = pdodata->ioctl_q.Flink;
 		le != &pdodata->ioctl_q;
 		le = le->Flink) {
 		urb_r = CONTAINING_RECORD(le, struct urb_req, list);
+
+		// 链表中的IRP请求未被发到采集端
 		if (urb_r->send == 0) {
+
 			ioctl_irp = urb_r->irp;
+
 			seq_num = ++(pdodata->seq_num);
 			urb_r->send = 1;
 			old_seq_num = urb_r->seq_num;
@@ -1199,20 +1230,30 @@ int process_read_irp(PPDO_DEVICE_DATA pdodata, PIRP read_irp)
 			break;
 		}
 	}
+	
+	// 如请求链表中无请求
 	if (NULL == ioctl_irp) {
+		// pending_read_irp是干什么的?
 		if (pdodata->pending_read_irp)
 			status = STATUS_INVALID_DEVICE_REQUEST;
 		else {
+			// 当ReadFile时，系统此前还没有向驱动发送任何IRP请求，
+			// 则将用户层的IRP置为Pending。
 			IoMarkIrpPending(read_irp);
 			pdodata->pending_read_irp = read_irp;
 		}
 		KeReleaseSpinLock(&pdodata->q_lock, oldirql);
 		return status;
 	}
+
 	if (old_seq_num)
 		KdPrint(("Error, why old_seq_num %d\n", old_seq_num));
 	KdPrint(("get a ioctl_irp %p %d\n", ioctl_irp, seq_num));
+
+	// 将ioctl_irp的一些请求信息填充到 read_irp中，也就是说
+	// 用户层调用的ReadFile的buf将得到此信息，最后就能将此请求发送到数据采集端
 	status = set_read_irp_data(read_irp, ioctl_irp, seq_num, pdodata->devid);
+
 	if (status == STATUS_SUCCESS || !IoSetCancelRoutine(ioctl_irp, NULL)) {
 		KeReleaseSpinLock(&pdodata->q_lock, oldirql);
 		return status;
@@ -1221,6 +1262,7 @@ int process_read_irp(PPDO_DEVICE_DATA pdodata, PIRP read_irp)
 	RemoveEntryList(le);
 	KeReleaseSpinLock(&pdodata->q_lock, oldirql);
 	ExFreeToNPagedLookasideList(&g_lookaside, urb_r);
+	// 驱动层请求的IRP参数不正确
 	ioctl_irp->IoStatus.Status = STATUS_INVALID_PARAMETER;
 	IoCompleteRequest(ioctl_irp, IO_NO_INCREMENT);
 	return status;
@@ -1264,6 +1306,8 @@ Bus_Read(
 		goto END;
 	}
 	stackirp = IoGetCurrentIrpStackLocation(Irp);
+
+	// 只有FDO能使用FsContext
 	pdodata = stackirp->FileObject->FsContext;
 	if (NULL == pdodata || pdodata->Present == FALSE) {
 		status = STATUS_INVALID_DEVICE_REQUEST;
@@ -1449,7 +1493,11 @@ static void * seek_to_next_desc(PUSB_CONFIGURATION_DESCRIPTOR config, unsigned i
 	} while (1);
 }
 
-static void * seek_to_one_intf_desc(PUSB_CONFIGURATION_DESCRIPTOR config, unsigned int * offset, unsigned int num, unsigned int alternatesetting)
+static void * seek_to_one_intf_desc(
+	PUSB_CONFIGURATION_DESCRIPTOR config,
+	unsigned int * offset, 
+	unsigned int num, 
+	unsigned int alternatesetting)
 {
 	PUSB_INTERFACE_DESCRIPTOR intf_desc;
 
@@ -1600,7 +1648,7 @@ int proc_reset_pipe(PPDO_DEVICE_DATA pdodata,
 }
 
 int proc_select_config(PPDO_DEVICE_DATA pdodata,
-	struct _URB_SELECT_CONFIGURATION * req)
+	struct _URB_SELECT_CONFIGURATION *req)
 {
 	unsigned int i, j;
 	unsigned int offset = 0;
@@ -1627,16 +1675,19 @@ int proc_select_config(PPDO_DEVICE_DATA pdodata,
 	intf = &req->Interface;
 	for (i = 0; i<req->ConfigurationDescriptor->bNumInterfaces; i++) {
 		KdPrint(("the %d interface %p\n", i, intf));
+
 		if ((char *)intf + sizeof(*intf) - sizeof(intf->Pipes[0])
-			- (char *)req
-	>req->Hdr.Length) {
+			- (char *)req > req->Hdr.Length) 
+		{
 			KdPrint(("Warning, not all interface select\n"));
 			return STATUS_SUCCESS;
 		}
+
 		intf_desc = seek_to_one_intf_desc(
 			(PUSB_CONFIGURATION_DESCRIPTOR)pdodata->dev_config,
 			&offset, intf->InterfaceNumber,
 			intf->AlternateSetting);
+
 		if (NULL == intf_desc) {
 			KdPrint(("Warning, no interface desc\n"));
 			return STATUS_INVALID_DEVICE_REQUEST;
@@ -1712,6 +1763,7 @@ int proc_urb(PPDO_DEVICE_DATA pdodata, void *arg)
 	KdPrint(("URB FUNC:%d %s\n", urb->UrbHeader.Function, 
 		(urb->UrbHeader.Function)));
 	switch (urb->UrbHeader.Function) {
+		// URB 里面是一个union，根据urbheader.function来决定具体是哪个结构
 	case URB_FUNCTION_SELECT_CONFIGURATION:
 		KdPrint(("select configuration\n"));
 		return proc_select_config(pdodata, arg);
@@ -1719,6 +1771,8 @@ int proc_urb(PPDO_DEVICE_DATA pdodata, void *arg)
 		return proc_reset_pipe(pdodata, arg);
 	case URB_FUNCTION_GET_CURRENT_FRAME_NUMBER:
 		return proc_get_frame(pdodata, arg);
+
+		// 其他URB请求军返回Pending，表示请求不能被立刻完成
 	case URB_FUNCTION_ISOCH_TRANSFER:
 		/* show_iso_urb(arg); */
 		/* passthrough */
@@ -1732,7 +1786,7 @@ int proc_urb(PPDO_DEVICE_DATA pdodata, void *arg)
 	case URB_FUNCTION_VENDOR_OTHER:
 	case URB_FUNCTION_GET_DESCRIPTOR_FROM_INTERFACE:
 	case URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE:
-	case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
+	case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: // 大容量传输  等都返回Pending。
 	case URB_FUNCTION_SELECT_INTERFACE:
 		return STATUS_PENDING;
 	default:
@@ -1774,8 +1828,15 @@ void cancel_irp(PDEVICE_OBJECT pdo, PIRP Irp)
 	else {
 		KdPrint(("Warning, why we can't found it?\n"));
 	}
+
+	// 必须设置 status 为STATUS_CANCELLED， information必须设置为0
 	Irp->IoStatus.Status = STATUS_CANCELLED;
+	//Irp->IoStatus.Information = 0;
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
+	// 1. 当驱动 或者 系统组件 调用 IoCancelIrp(应用层对应时CancelIo)时，I/O manager将调用cancel_irp例程
+	// 2. I/O manager 调用cancel_irp例程前，调用了 IoAcquireCancelSpinLock,
+	// 所以， 在cancel_irp例程中应在适当的时候调用IoReleaseCancelSpinLock。
+	// 3. 用户层在异步读后，可在任意时刻调用CancelIO取消IRP请求。
 	IoReleaseCancelSpinLock(Irp->CancelIrql);
 }
 
@@ -1787,16 +1848,28 @@ int try_addq(PPDO_DEVICE_DATA pdodata, PIRP Irp)
 	unsigned long seq_num;
 	struct urb_req * urb_r;
 
+	// ExInitializeNPagedLookasideList 阶段指定了每次分配内存的大小
 	urb_r = ExAllocateFromNPagedLookasideList(&g_lookaside);
 	if (NULL == urb_r)
 		return STATUS_INSUFFICIENT_RESOURCES;
 	RtlZeroMemory(urb_r, sizeof(*urb_r));
 	urb_r->irp = Irp;
+
 	KeAcquireSpinLock(&pdodata->q_lock, &oldirql);
+
 	read_irp = pdodata->pending_read_irp;
 	pdodata->pending_read_irp = NULL;
+
+	// 表明在系统IRP请求来到之前，用户层的ReadFile信息还没来过
 	if (NULL == read_irp) {
+		// 1. 当驱动 或者 系统组件 调用 IoCancelIrp(应用层对应时CancelIo)时，I/O manager将调用cancel_irp例程
+		// 2. I/O manager 调用cancel_irp例程前，调用了 IoAcquireCancelSpinLock,
+		// 所以， 在cancel_irp例程中应在适当的时候调用IoReleaseCancelSpinLock。
+		// 3. 用户层在异步读后，可在任意时刻调用CancelIO取消IRP请求。
 		IoSetCancelRoutine(Irp, cancel_irp);
+		//如果Cancel为TRUE，则IRP将被取消或者应该被取消
+		//当调用IoCancelIrp 或者 CancelIo（内部调用IoCancelIrp）时，
+		// 无论是否有取消例程，Cancel域都将被置为TRUE
 		if (Irp->Cancel && IoSetCancelRoutine(Irp, NULL)) {
 			KeReleaseSpinLock(&pdodata->q_lock, oldirql);
 			ExFreeToNPagedLookasideList(&g_lookaside, urb_r);
@@ -1804,21 +1877,28 @@ int try_addq(PPDO_DEVICE_DATA pdodata, PIRP Irp)
 		}
 		else {
 			IoMarkIrpPending(Irp);
+			//将USB功能驱动的IRP请求插入 pdo对象中的队列，以等待用户层的ReadFile
 			InsertTailList(&pdodata->ioctl_q, &urb_r->list);
 		}
 	}
-	else
+	else // 
 		seq_num = ++(pdodata->seq_num);
 
+
 	KeReleaseSpinLock(&pdodata->q_lock, oldirql);
+
 	if (NULL == read_irp)
 		return STATUS_PENDING;
+
+	// 将系统请求的IRP信息填充到read_irp中
 	read_irp->IoStatus.Status = set_read_irp_data(read_irp, Irp, seq_num, pdodata->devid);
 
 	if (read_irp->IoStatus.Status == STATUS_SUCCESS) {
+
 		KeAcquireSpinLock(&pdodata->q_lock, &oldirql);
-		urb_r->send = 1;
-		urb_r->seq_num = seq_num;
+		urb_r->send = 1; // 标记为已发送请求到采集端
+		urb_r->seq_num = seq_num; // 请求/答应 匹配数字
+
 		IoSetCancelRoutine(Irp, cancel_irp);
 		if (Irp->Cancel && IoSetCancelRoutine(Irp, NULL)) {
 			KeReleaseSpinLock(&pdodata->q_lock, oldirql);
@@ -1827,7 +1907,7 @@ int try_addq(PPDO_DEVICE_DATA pdodata, PIRP Irp)
 		}
 		else {
 			IoMarkIrpPending(Irp);
-			InsertTailList(&pdodata->ioctl_q, &urb_r->list);
+			InsertTailList(&pdodata->ioctl_q, &urb_r->list); //插入链表等待回复
 			KeReleaseSpinLock(&pdodata->q_lock, oldirql);
 		}
 	}
@@ -1859,6 +1939,7 @@ Bus_Internal_IoCtl(
 	irpStack = IoGetCurrentIrpStackLocation(Irp);
 	KdPrint(("internal control:%d %s\r\n", irpStack->Parameters.DeviceIoControl.IoControlCode, code2name(irpStack->Parameters.DeviceIoControl.IoControlCode)));
 
+	//只关心PDO（USB设备）的内部请求
 	if (commonData->IsFDO) {
 		Irp->IoStatus.Status = status = STATUS_INVALID_DEVICE_REQUEST;
 		IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -1867,6 +1948,7 @@ Bus_Internal_IoCtl(
 
 	pdoData = (PPDO_DEVICE_DATA)DeviceObject->DeviceExtension;
 
+	// Unplug IOCTL is received,
 	if (pdoData->Present == FALSE) {
 		Irp->IoStatus.Status = status = STATUS_DEVICE_NOT_CONNECTED;
 		IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -1879,9 +1961,13 @@ Bus_Internal_IoCtl(
 	status = STATUS_INVALID_PARAMETER;
 
 	switch (irpStack->Parameters.DeviceIoControl.IoControlCode) {
+		//功能驱动发来URB
 	case IOCTL_INTERNAL_USB_SUBMIT_URB:
+		// 1. 不能立刻完成的请求 返回STATUS_PENDING
+		// 2. 能立刻完成的请求 返回其他值
 		status = proc_urb(pdoData, irpStack->Parameters.Others.Argument1);
 		break;
+
 	case IOCTL_INTERNAL_USB_GET_PORT_STATUS:
 		status = STATUS_SUCCESS;
 		*(unsigned long *)irpStack->Parameters.Others.Argument1 =
@@ -1895,10 +1981,15 @@ Bus_Internal_IoCtl(
 		break;
 	}
 	Irp->IoStatus.Information = 0;
-
+	
+	// proc_urb中 ，大容量的读取等操作，返回了Pending ，并且将请求记录到了
+	// 虚拟USB设备的 LIST_ENTRY链表中，
+	// 当用户层代码执行ReadFile 和 WriteFile 时，就会从此LIST_ENTRY 获取/填充 buffer 以完成USB功能驱动的请求。
 	if (status == STATUS_PENDING)
 		status = try_addq(pdoData, Irp);
+
 	if (status != STATUS_PENDING) {
+		// 可能是正确完成，可能是参数错误等等值
 		Irp->IoStatus.Status = status;
 		IoCompleteRequest(Irp, IO_NO_INCREMENT);
 	}
@@ -1968,7 +2059,9 @@ NT status code
 
 	irpStack = IoGetCurrentIrpStackLocation(Irp);
 
+	// Irp->AssociatedIrp.SystemBuffer 存储了DeviceIoControl传入的信息
 	buffer = Irp->AssociatedIrp.SystemBuffer;
+	//如 Parameters.Write.Length 存储了WriteFile时缓冲区的长度
 	inlen = irpStack->Parameters.DeviceIoControl.InputBufferLength;
 	outlen = irpStack->Parameters.DeviceIoControl.OutputBufferLength;
 
@@ -1988,6 +2081,8 @@ NT status code
 		if (sizeof(ioctl_usbvbus_get_ports_status) == outlen) {
 			Bus_KdPrint(fdoData, BUS_DBG_IOCTL_TRACE, ("get ports status called\n"));
 
+			// 大概意思是一个电脑最多接入127个USB设备，通过一个数组标记某个port是否被使用，
+			// ioctl_usbvbus_get_ports_status 结构存储了相关信息
 			status = bus_get_ports_status((ioctl_usbvbus_get_ports_status *)buffer, fdoData, &info);
 		}
 		break;
@@ -2019,6 +2114,7 @@ NT status code
 		break; // default status is STATUS_INVALID_PARAMETER
 	}
 
+	//information是返回的字节数
 	Irp->IoStatus.Information = info;
 END:
 	Irp->IoStatus.Status = status;

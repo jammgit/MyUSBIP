@@ -217,7 +217,7 @@ typedef struct _PDO_DEVICE_DATA
 	// An array of (zero terminated wide character strings).
 	// The array itself also null terminated
 
-	PWCHAR      HardwareIDs;
+	PWCHAR  HardwareIDs;
 	PWCHAR	compatible_ids;
 	ULONG	compatible_ids_len;
 
@@ -241,13 +241,16 @@ typedef struct _PDO_DEVICE_DATA
 	UCHAR	speed;
 	UCHAR	unused; /* 4 bytes alignment */
 
-					//
-					// Used to track the intefaces handed out to other drivers.
-					// If this value is non-zero, we fail query-remove.
-					//
-	ULONG       InterfaceRefCount;
+	//
+	// Used to track the intefaces handed out to other drivers.
+	// If this value is non-zero, we fail query-remove.
+	//
+	ULONG   InterfaceRefCount;
 	PIRP	pending_read_irp;
+
+	// 保存了 struct urb_req 的双向链表
 	LIST_ENTRY  ioctl_q;
+
 	KSPIN_LOCK	q_lock;
 	PFILE_OBJECT fo;
 	unsigned int devid;
